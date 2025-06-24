@@ -33,7 +33,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Tentukan URL tujuan berdasarkan role user
+        $url = $request->user()->role === 'seller'
+            ? route('seller.dashboard')
+            : route('dashboard');
+
+        // Arahkan ke URL yang dituju sebelumnya, atau ke URL default sesuai role
+        return redirect()->intended($url);
     }
 
     /**

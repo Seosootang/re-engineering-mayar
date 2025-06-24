@@ -21,6 +21,22 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+        
+        // Registering middleware aliases
+        $middleware->alias([
+            'seller' => \App\Http\Middleware\EnsureSeller::class,
+        ]);
+
+        $middleware->redirectUsersTo(function ($request) {
+            // Cek role user yang sedang login
+            if ($request->user()->role === 'seller') {
+                return route('seller.dashboard'); // Jika seller, arahkan ke dashboard seller
+            }
+
+            return route('dashboard'); // Jika bukan, arahkan ke dashboard standar
+        });
+        // =========================================================================
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
