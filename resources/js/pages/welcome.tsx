@@ -1,7 +1,6 @@
 // resources/js/Pages/Welcome.tsx
 
 import { Link, Head } from '@inertiajs/react';
-// PERBAIKAN: Impor 'SharedData' bukan 'PageProps'
 import { type SharedData } from '@/types';
 import { Button } from '@/components/ui/button';
 
