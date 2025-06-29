@@ -1,28 +1,33 @@
 <?php
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\WebinarController;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [ /* ...data dari Breeze... */ ]);
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    // Update dashboard route to use controller method
+    Route::get('/dashboard', [WebinarController::class, 'userDashboard'])->name('dashboard');
     
-    // Route untuk webinar detail
-    Route::get('/webinar-detail/{id}', function ($id) {
-        return Inertia::render('webinar-detail');
-    })->name('webinar.detail');
+    // Route untuk webinar detail - update to use controller method
+    Route::get('/webinar-detail/{id}', [WebinarController::class, 'publicShow'])->name('webinar.detail');
 });
 
 Route::middleware(['auth', 'verified', 'seller'])->group(function () {
-    Route::get('/seller', function () {
-        return Inertia::render('seller/dashboard');
-    })->name('seller.dashboard');
+    Route::get('/seller', [WebinarController::class, 'sellerDashboard'])->name('seller.dashboard');
     
-    // Route untuk create webinar
+    // Webinar management routes for sellers
+    Route::get('/seller/webinars', [WebinarController::class, 'index'])->name('webinars.index');
+    Route::get('/seller/webinars/create', [WebinarController::class, 'create'])->name('webinars.create');
+    Route::post('/seller/webinars', [WebinarController::class, 'store'])->name('webinars.store');
+    Route::get('/seller/webinars/{id}', [WebinarController::class, 'show'])->name('webinars.show');
+    Route::get('/seller/webinars/{id}/edit', [WebinarController::class, 'edit'])->name('webinars.edit');
+    Route::put('/seller/webinars/{id}', [WebinarController::class, 'update'])->name('webinars.update');
+    Route::delete('/seller/webinars/{id}', [WebinarController::class, 'destroy'])->name('webinars.destroy');
+    
+    // Keep your existing create route if you want to maintain it
     Route::get('/seller/webinar/create', function () {
         return Inertia::render('seller/webinar/CreateWebinar');
     })->name('seller.webinar.create');

@@ -3,38 +3,72 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, Play } from 'lucide-react';
 
-interface Props {
-    id?: string;
+interface Webinar {
+    id: number;
+    title: string;
+    description: string;
+    cover_image_path?: string;
+    payment_type: 'paid' | 'free' | 'pay_what_you_want';
+    price?: number;
+    original_price?: number;
+    start_datetime: string;
+    end_datetime?: string;
+    webinar_link: string;
+    instructions?: string;
+    terms_and_conditions?: string;
+    max_participants?: number;
+    created_at: string;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-    {
-        title: 'Webinar Detail',
-        href: '#',
-    },
-];
+interface Props {
+    webinar: Webinar;
+    canRegister: boolean;
+}
 
-// Website Security Webinar data (ID: 6)
-const webinar = {
-    id: 6,
-    title: "Website Security: Combatting Online Gambling Malware & Others",
-    description: "Essential cybersecurity practices to protect your website from gambling malware, ransomware, and other emerging online threats.",
-    category: "Website Security",
-    date: "2023-12-10",
-    duration: "60 minutes",
-    speaker: "Michael Chen",
-    maxSlots: 500,
-    registeredSlots: 347,
-    get remainingSlots() {
-        return this.maxSlots - this.registeredSlots;
-    }
+// Function to get category from title (same as dashboard)
+const getCategoryFromTitle = (title: string): string => {
+    const lowerTitle = title.toLowerCase();
+    if (lowerTitle.includes('cyber') || lowerTitle.includes('security')) return 'Cybersecurity';
+    if (lowerTitle.includes('remote') || lowerTitle.includes('work')) return 'Remote Work';
+    if (lowerTitle.includes('seo') || lowerTitle.includes('search')) return 'SEO Marketing';
+    if (lowerTitle.includes('marketing') || lowerTitle.includes('digital')) return 'Digital Marketing';
+    if (lowerTitle.includes('content')) return 'Content Marketing';
+    if (lowerTitle.includes('website') || lowerTitle.includes('web')) return 'Website Security';
+    return 'General';
 };
 
-export default function WebinarDetail({ id }: Props) {
+// Function to calculate duration
+const calculateDuration = (startDateTime: string, endDateTime?: string): string => {
+    if (!endDateTime) return '60 minutes'; // Default duration
+    
+    const start = new Date(startDateTime);
+    const end = new Date(endDateTime);
+    const diffInMinutes = Math.floor((end.getTime() - start.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes >= 60) {
+        const hours = Math.floor(diffInMinutes / 60);
+        const minutes = diffInMinutes % 60;
+        return minutes > 0 ? `${hours} jam ${minutes} menit` : `${hours} jam`;
+    }
+    
+    return `${diffInMinutes} menit`;
+};
+
+export default function WebinarDetail({ webinar, canRegister }: Props) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+        },
+        {
+            title: 'Webinar Detail',
+            href: '#',
+        },
+    ];
+
+    const category = getCategoryFromTitle(webinar.title);
+    const duration = calculateDuration(webinar.start_datetime, webinar.end_datetime);
+
     return (
         <AppHeaderLayout breadcrumbs={breadcrumbs}>
             <Head title={webinar.title} />
@@ -52,14 +86,22 @@ export default function WebinarDetail({ id }: Props) {
                 {/* Video Player */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-6">
                     <div className="aspect-video bg-gradient-to-br from-red-500 to-orange-600 relative">
+                        {webinar.cover_image_path && (
+                            <img 
+                                src={`/storage/${webinar.cover_image_path}`} 
+                                alt={webinar.title}
+                                className="w-full h-full object-cover"
+                            />
+                        )}
+                        <div className="absolute inset-0 bg-black/20"></div>
                         <div className="absolute top-4 left-4">
                             <span className="bg-red-500 text-white px-3 py-1 rounded text-sm">
-                                {webinar.category}
+                                {category}
                             </span>
                         </div>
                         <div className="absolute bottom-4 right-4">
                             <span className="bg-black/50 text-white px-2 py-1 rounded text-sm">
-                                {webinar.duration}
+                                {duration}
                             </span>
                         </div>
                     </div>
@@ -77,7 +119,7 @@ export default function WebinarDetail({ id }: Props) {
                     <div className="grid md:grid-cols-4 gap-4 mb-6">
                         <div>
                             <span className="text-sm text-gray-500">Tanggal</span>
-                            <p className="font-medium">{new Date(webinar.date).toLocaleDateString('id-ID', {
+                            <p className="font-medium">{new Date(webinar.start_datetime).toLocaleDateString('id-ID', {
                                 day: 'numeric',
                                 month: 'long', 
                                 year: 'numeric'
@@ -85,40 +127,72 @@ export default function WebinarDetail({ id }: Props) {
                         </div>
                         <div>
                             <span className="text-sm text-gray-500">Durasi</span>
-                            <p className="font-medium">{webinar.duration}</p>
+                            <p className="font-medium">{duration}</p>
                         </div>
                         <div>
-                            <span className="text-sm text-gray-500">Pembicara</span>
-                            <p className="font-medium">{webinar.speaker}</p>
+                            <span className="text-sm text-gray-500">Jenis</span>
+                            <p className="font-medium capitalize">
+                                {webinar.payment_type === 'free' ? 'Gratis' : 
+                                 webinar.payment_type === 'paid' ? 'Berbayar' : 
+                                 'Bayar Sesuai Keinginan'}
+                            </p>
                         </div>
                         <div>
-                            <span className="text-sm text-gray-500">Sisa Slot</span>
+                            <span className="text-sm text-gray-500">Status</span>
                             <p className="font-medium text-green-600">
-                                {webinar.remainingSlots} / {webinar.maxSlots}
+                                {canRegister ? 'Tersedia' : 'Ditutup'}
                             </p>
                         </div>
                     </div>
 
-                    {/* Slot Progress Bar */}
-                    <div className="mb-6">
-                        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-2">
-                            <span>Slot Terisi: {webinar.registeredSlots}</span>
-                            <span>Sisa: {webinar.remainingSlots}</span>
+                    {/* Price Display */}
+                    {webinar.payment_type !== 'free' && webinar.price && (
+                        <div className="mb-6">
+                            <span className="text-sm text-gray-500">Harga</span>
+                            <div className="flex items-center gap-2">
+                                <p className="text-2xl font-bold text-green-600">
+                                    Rp {webinar.price.toLocaleString('id-ID')}
+                                </p>
+                                {webinar.original_price && webinar.original_price > webinar.price && (
+                                    <p className="text-lg text-gray-500 line-through">
+                                        Rp {webinar.original_price.toLocaleString('id-ID')}
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                            <div 
-                                className="bg-gradient-to-r from-green-400 to-blue-500 h-3 rounded-full transition-all duration-500"
-                                style={{ width: `${(webinar.registeredSlots / webinar.maxSlots) * 100}%` }}
-                            ></div>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">
-                            {Math.round((webinar.registeredSlots / webinar.maxSlots) * 100)}% slot terisi
-                        </p>
-                    </div>
+                    )}
 
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center">
-                        Daftar Kan Dirimu Sekarang
+                    {/* Instructions */}
+                    {webinar.instructions && (
+                        <div className="mb-6">
+                            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Instruksi</h3>
+                            <p className="text-gray-600 dark:text-gray-300 text-sm">
+                                {webinar.instructions}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Registration Button */}
+                    <button 
+                        className={`px-6 py-3 rounded-lg font-medium flex items-center ${
+                            canRegister 
+                                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                : 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                        }`}
+                        disabled={!canRegister}
+                    >
+                        {canRegister ? 'Daftar Kan Dirimu Sekarang' : 'Pendaftaran Ditutup'}
                     </button>
+
+                    {/* Terms and Conditions */}
+                    {webinar.terms_and_conditions && (
+                        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Syarat dan Ketentuan</h3>
+                            <p className="text-gray-600 dark:text-gray-300 text-sm">
+                                {webinar.terms_and_conditions}
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </AppHeaderLayout>
