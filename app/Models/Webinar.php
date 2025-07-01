@@ -39,5 +39,9 @@ class Webinar extends Model
         'sales_start_datetime' => 'datetime',
         'registration_close_datetime' => 'datetime',
     ];
-}
 
+    public function participants()
+    {
+        return $this->hasMany(Participant::class);
+    }
+}

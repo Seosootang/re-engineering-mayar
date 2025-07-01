@@ -41,3 +41,49 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+// Webinar
+export interface Webinar {
+    id: number;
+    title: string;
+    description: string;
+    cover_image_path?: string;
+    payment_type: 'paid' | 'free' | 'pay_what_you_want';
+    price?: number;
+    original_price?: number;
+    start_datetime: string;
+    end_datetime?: string;
+    webinar_link: string;
+    instructions?: string;
+    terms_and_conditions?: string;
+    max_participants?: number;
+    created_at: string;
+}
+
+// Participant
+export interface Participant {
+    id: number;
+    user: User;
+    webinar_id: number;
+    invoice_webinar_id: number;
+    registered_at: string;
+}
+
+export interface PaginatedResponse<T> {
+    data: T[];
+    links: {
+        first: string | null;
+        last: string | null;
+        prev: string | null;
+        next: string | null;
+    };
+    meta: {
+        current_page: number;
+        from: number;
+        last_page: number;
+        path: string;
+        per_page: number;
+        to: number;
+        total: number;
+    };
+}
