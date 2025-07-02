@@ -6,9 +6,11 @@ use Inertia\Inertia;
 use App\Http\Controllers\WebinarController;
 use App\Http\Controllers\WebinarParticipantController;
 use App\Http\Controllers\WebinarRegistrationController;
+use Illuminate\Support\Facades\Redirect;
 
 Route::get('/', function () {
-    return Inertia::render('welcome', [ /* ...data dari Breeze... */]);
+    // Alihkan langsung ke halaman login yang sudah ada
+    return Redirect::route('login');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
