@@ -13,7 +13,7 @@ class WebinarParticipantController extends Controller
         // Load peserta yang berelasi dengan user
         $participants = $webinar->participants()->with('user')->paginate(10);
 
-        return Inertia::render('seller/webinars/participants', [
+        return Inertia::render('seller/webinar/participants', [
             'webinar' => $webinar,
             'participants' => $participants
         ]);

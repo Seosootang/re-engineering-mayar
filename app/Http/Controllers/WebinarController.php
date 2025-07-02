@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class WebinarController extends Controller
 {
-    public function index() 
+    public function index()
     {
         $webinars = Webinar::latest()->get();
         return Inertia::render('seller/webinars/index', [
@@ -46,6 +46,7 @@ class WebinarController extends Controller
         ]);
 
         $data = $request->all();
+        $data['user_id'] = Auth::id();
 
         // Handle cover image upload
         if ($request->hasFile('cover_image_path')) {
@@ -86,7 +87,7 @@ class WebinarController extends Controller
         ]);
     }
 
-    public function update(Request $request, string $id) 
+    public function update(Request $request, string $id)
     {
         $request->validate([
             'title' => 'required|string|max:255',
@@ -145,12 +146,12 @@ class WebinarController extends Controller
     public function destroy(string $id)
     {
         $webinar = Webinar::findOrFail($id);
-        
+
         // Delete cover image if exists
         if ($webinar->cover_image_path) {
             Storage::disk('public')->delete($webinar->cover_image_path);
         }
-        
+
         $webinar->delete();
 
         return redirect()->route('webinars.index')->with('success', 'Webinar deleted successfully.');
@@ -192,9 +193,9 @@ class WebinarController extends Controller
     {
         $webinars = Webinar::where('start_datetime', '>', now())
             ->where('sales_start_datetime', '<=', now())
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->whereNull('registration_close_datetime')
-                      ->orWhere('registration_close_datetime', '>', now());
+                    ->orWhere('registration_close_datetime', '>', now());
             })
             ->orderBy('start_datetime', 'asc')
             ->get();
@@ -205,16 +206,16 @@ class WebinarController extends Controller
     }
 
     // Public webinar detail for users
-    
+
 
     public function publicShow(string $id)
     {
         $webinar = Webinar::findOrFail($id);
-        
+
         // Check if webinar is available for registration
-        $canRegister = $webinar->start_datetime > now() && 
-                    ($webinar->sales_start_datetime === null || $webinar->sales_start_datetime <= now()) &&
-                    ($webinar->registration_close_datetime === null || $webinar->registration_close_datetime > now());
+        $canRegister = $webinar->start_datetime > now() &&
+            ($webinar->sales_start_datetime === null || $webinar->sales_start_datetime <= now()) &&
+            ($webinar->registration_close_datetime === null || $webinar->registration_close_datetime > now());
 
         return Inertia::render('webinar-detail', [
             'webinar' => $webinar,

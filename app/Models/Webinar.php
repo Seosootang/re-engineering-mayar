@@ -10,6 +10,7 @@ class Webinar extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'title',
         'payment_type',
         'price',

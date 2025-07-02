@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('webinar_id')->constrained()->onDelete('cascade');
-            $table->foreignId('invoice_webinar_id')->constrained('invoice_webinars')->onDelete('cascade');
+            $table->foreignId('invoice_webinar_id')->nullable()->constrained('invoice_webinars')->onDelete('cascade');
             $table->timestamp('registered_at')->useCurrent();
             $table->timestamps();
 

@@ -40,6 +40,7 @@ export interface User {
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
+    role: 'user' | 'seller';
 }
 
 // Webinar
@@ -58,6 +59,18 @@ export interface Webinar {
     terms_and_conditions?: string;
     max_participants?: number;
     created_at: string;
+}
+
+export interface InvoiceWebinar {
+    id: number;
+    user_id: number;
+    webinar_id: number;
+    amount: number;
+    status: 'pending' | 'paid' | 'failed';
+    invoice_code: string;
+    paid_at: string | null;
+    webinar: Webinar;
+    user: User;
 }
 
 // Participant
@@ -86,4 +99,14 @@ export interface PaginatedResponse<T> {
         to: number;
         total: number;
     };
+}
+
+export interface HistoryItem {
+    id: string;
+    invoice_code: string;
+    title: string;
+    date: string;
+    amount: number;
+    type: 'paid' | 'free';
+    webinar_id: number;
 }

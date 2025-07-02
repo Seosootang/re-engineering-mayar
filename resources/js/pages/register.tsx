@@ -25,10 +25,6 @@ export default function Register({ webinar, isRegistered }: RegisterProps) {
             href: '/dashboard',
         },
         {
-            title: 'Webinar',
-            href: '/webinars',
-        },
-        {
             title: webinar.title,
             href: '#',
         },

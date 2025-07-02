@@ -1,10 +1,9 @@
 import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavGroup, type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BarChart3, History, HomeIcon, Plus, Settings2, UserCircle, Users, Wallet } from 'lucide-react';
+import { History, HomeIcon, Plus, Settings2, UserCircle, Users, Wallet } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavGroups: NavGroup[] = [
@@ -33,7 +32,7 @@ const mainNavGroups: NavGroup[] = [
         items: [
             {
                 title: 'Kelola Peserta',
-                href: '/seller/participants',
+                href: route('seller.webinars.participants.index'),
                 icon: Users,
             },
             {
@@ -46,14 +45,14 @@ const mainNavGroups: NavGroup[] = [
     {
         title: 'Finansial',
         items: [
+            // {
+            //     title: 'Lihat Statistik Lengkap',
+            //     href: '/seller/analytics',
+            //     icon: BarChart3,
+            // },
             {
-                title: 'Lihat Statistik Lengkap',
-                href: '/seller/analytics',
-                icon: BarChart3,
-            },
-            {
-                title: 'Tarik Komisi',
-                href: '/seller/withdraw',
+                title: 'Pemasukan',
+                href: route('seller.income.index'),
                 icon: Wallet,
             },
         ],

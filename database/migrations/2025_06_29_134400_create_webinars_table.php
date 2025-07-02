@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('webinars', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             // Informasi Dasar
             $table->string('title');
             $table->enum('payment_type', ['paid', 'free', 'pay_what_you_want'])->default('free');

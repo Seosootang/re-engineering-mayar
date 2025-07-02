@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\IncomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\WebinarController;
@@ -19,7 +20,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('user/webinars')->name('user.webinars.')->group(function () {
         Route::get('/{webinar}/register', [WebinarRegistrationController::class, 'show'])->name('register.show');
+
         Route::post('/{webinar}/register', [WebinarRegistrationController::class, 'store'])->name('register.store');
+
+        Route::get('/purchase-history', [WebinarRegistrationController::class, 'history'])
+            ->name('history.index');
+
+        Route::get('/registered-webinars/{webinar}', [WebinarRegistrationController::class, 'showRegistered'])
+            ->name('registered.show');
     });
 });
 
@@ -43,6 +51,8 @@ Route::middleware(['auth', 'verified', 'seller'])->group(function () {
     Route::get('/seller/webinar/create', function () {
         return Inertia::render('seller/webinar/CreateWebinar');
     })->name('seller.webinar.create');
+
+    Route::get('/seller/income', [IncomeController::class, 'index'])->name('seller.income.index');
 });
 
 // File-file route lainnya
