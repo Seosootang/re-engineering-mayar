@@ -7,11 +7,59 @@ interface IncomeProps {
 }
 
 export default function Index({ transactions }: IncomeProps) {
+    // Menghitung total pendapatan per webinar
+    const incomeByWebinar = transactions.data.reduce(
+        (acc, trx) => {
+            const { webinar, amount } = trx;
+            if (!acc[webinar.id]) {
+                acc[webinar.id] = {
+                    title: webinar.title,
+                    total: 0,
+                };
+            }
+            acc[webinar.id].total += amount;
+            return acc;
+        },
+        {} as Record<string, { title: string; total: number }>,
+    );
+
+    // Menghitung total semua pendapatan
+    const totalIncome = transactions.data.reduce((acc, trx) => acc + trx.amount, 0);
+
     return (
         <AppSidebarLayout>
             <Head title="Riwayat Pemasukan" />
             <div className="space-y-6 p-4">
                 <h1 className="text-2xl font-bold">Riwayat Pemasukan</h1>
+
+                {/* Ringkasan Pendapatan */}
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {/* Total Pendapatan Keseluruhan */}
+                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+                        <div className="p-6">
+                            <h3 className="text-lg leading-none font-semibold tracking-tight">Total Semua Pendapatan</h3>
+                            <p className="mt-2 text-sm text-muted-foreground">Jumlah total dari semua transaksi webinar.</p>
+                            <p className="mt-4 text-3xl font-bold text-blue-600">Rp {totalIncome.toLocaleString('id-ID')}</p>
+                        </div>
+                    </div>
+                    {/* Total Pendapatan Per Webinar */}
+                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+                        <div className="p-6">
+                            <h3 className="text-lg leading-none font-semibold tracking-tight">Pendapatan Per Webinar</h3>
+                            <p className="mt-2 text-sm text-muted-foreground">Rincian pendapatan untuk setiap webinar.</p>
+                            <div className="mt-4 space-y-2">
+                                {Object.values(incomeByWebinar).map((webinar) => (
+                                    <div key={webinar.title} className="flex justify-between">
+                                        <span>{webinar.title}</span>
+                                        <span className="font-medium text-blue-600">Rp {webinar.total.toLocaleString('id-ID')}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Tabel Transaksi Terbaru */}
                 <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                     <div className="flex flex-col space-y-1.5 p-6">
                         <h3 className="text-lg leading-none font-semibold tracking-tight">Transaksi Terbaru</h3>

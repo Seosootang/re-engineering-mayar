@@ -44,6 +44,12 @@ Route::middleware(['auth', 'verified', 'seller'])->group(function () {
     Route::get('/seller/webinars/{id}/edit', [WebinarController::class, 'edit'])->name('webinars.edit');
     Route::put('/seller/webinars/{id}', [WebinarController::class, 'update'])->name('webinars.update');
     Route::delete('/seller/webinars/{id}', [WebinarController::class, 'destroy'])->name('webinars.destroy');
+    
+    // My webinars route
+    Route::get('/seller/my-webinars', [WebinarController::class, 'myWebinars'])->name('seller.webinars.my');
+    
+    // API endpoint for getting webinar data (for modals)
+    Route::get('/seller/webinars/{id}/data', [WebinarController::class, 'getWebinarData'])->name('webinars.data');
 
     Route::prefix('seller/webinars')->name('seller.webinars.')->group(function () {
         Route::get('/{webinar}/participants', [WebinarParticipantController::class, 'index'])->name('participants.index');

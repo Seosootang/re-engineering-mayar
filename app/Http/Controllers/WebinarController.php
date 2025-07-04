@@ -68,7 +68,7 @@ class WebinarController extends Controller
 
         Webinar::create($data);
 
-        return redirect()->route('webinars.index')->with('success', 'Webinar created successfully.');
+        return redirect()->route('seller.webinars.my')->with('success', 'Webinar created successfully.');
     }
 
     public function show(string $id)
@@ -140,7 +140,7 @@ class WebinarController extends Controller
 
         $webinar->update($data);
 
-        return redirect()->route('webinars.index')->with('success', 'Webinar updated successfully.');
+        return redirect()->route('seller.webinars.my')->with('success', 'Webinar updated successfully.');
     }
 
     public function destroy(string $id)
@@ -170,14 +170,36 @@ class WebinarController extends Controller
         ]);
     }
 
-    // Seller dashboard - show webinar statistics
+    // Seller dashboard - show webinar statistics FOR AUTHENTICATED USER ONLY
     public function sellerDashboard()
     {
-        $webinarCount = Webinar::count();
-        $upcomingWebinars = Webinar::where('start_datetime', '>', now())->count();
-        $pastWebinars = Webinar::where('start_datetime', '<', now())->count();
-        $freeWebinars = Webinar::where('payment_type', 'free')->count();
-        $paidWebinars = Webinar::where('payment_type', 'paid')->count();
+        $userId = Auth::id();
+        
+        // Filter all queries by the authenticated user
+        $webinarCount = Webinar::where('user_id', $userId)->count();
+        $upcomingWebinars = Webinar::where('user_id', $userId)
+            ->where('start_datetime', '>', now())
+            ->count();
+        $pastWebinars = Webinar::where('user_id', $userId)
+            ->where('start_datetime', '<', now())
+            ->count();
+        $freeWebinars = Webinar::where('user_id', $userId)
+            ->where('payment_type', 'free')
+            ->count();
+        $paidWebinars = Webinar::where('user_id', $userId)
+            ->where('payment_type', 'paid')
+            ->count();
+
+        // Calculate total revenue for this user
+        $totalRevenue = Webinar::where('user_id', $userId)
+            ->where('payment_type', 'paid')
+            ->sum('price');
+
+        // If you have a participants table, calculate total participants
+        // $totalParticipants = Webinar::where('user_id', $userId)
+        //     ->withCount('participants')
+        //     ->get()
+        //     ->sum('participants_count');
 
         return Inertia::render('seller/dashboard', [
             'webinarCount' => $webinarCount,
@@ -185,6 +207,8 @@ class WebinarController extends Controller
             'pastWebinars' => $pastWebinars,
             'freeWebinars' => $freeWebinars,
             'paidWebinars' => $paidWebinars,
+            'totalRevenue' => $totalRevenue,
+            // 'totalParticipants' => $totalParticipants ?? 0,
         ]);
     }
 
@@ -192,7 +216,10 @@ class WebinarController extends Controller
     public function publicIndex()
     {
         $webinars = Webinar::where('start_datetime', '>', now())
-            ->where('sales_start_datetime', '<=', now())
+            ->where(function ($query) {
+                $query->whereNull('sales_start_datetime')
+                    ->orWhere('sales_start_datetime', '<=', now());
+            })
             ->where(function ($query) {
                 $query->whereNull('registration_close_datetime')
                     ->orWhere('registration_close_datetime', '>', now());
@@ -206,8 +233,6 @@ class WebinarController extends Controller
     }
 
     // Public webinar detail for users
-
-
     public function publicShow(string $id)
     {
         $webinar = Webinar::findOrFail($id);
@@ -220,6 +245,17 @@ class WebinarController extends Controller
         return Inertia::render('webinar-detail', [
             'webinar' => $webinar,
             'canRegister' => $canRegister
+        ]);
+    }
+
+    public function myWebinars()
+    {
+        $webinars = Webinar::where('user_id', Auth::id())
+            ->latest()
+            ->get();
+
+        return Inertia::render('seller/webinar/MyWebinars', [
+            'webinars' => $webinars,
         ]);
     }
 }

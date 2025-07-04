@@ -1,46 +1,26 @@
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
-import { Head } from '@inertiajs/react';
 import { type BreadcrumbItem } from '@/types';
-import { DollarSign, Calendar, Users, TrendingUp, Plus, BarChart3, Wallet } from 'lucide-react';
+import { Head } from '@inertiajs/react';
+import { Calendar, DollarSign, Plus } from 'lucide-react';
 
 // Definisikan breadcrumbs untuk halaman ini
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Seller Dashboard',
-        href: '/seller', // Simplified route
+        href: '/seller',
     },
 ];
 
-// Sample data - nanti bisa diganti dengan data dari backend
-const dashboardData = {
-    totalRevenue: 125000000, // 125 juta
-    thisMonthRevenue: 15750000, // 15.75 juta
-    activeWebinars: 8,
-    totalParticipants: 2340
-};
-
-// Revenue Chart Data (12 bulan terakhir)
-const revenueChartData = [
-    { month: 'Jan', revenue: 8500000 },
-    { month: 'Feb', revenue: 12200000 },
-    { month: 'Mar', revenue: 9800000 },
-    { month: 'Apr', revenue: 15400000 },
-    { month: 'May', revenue: 11700000 },
-    { month: 'Jun', revenue: 18900000 },
-    { month: 'Jul', revenue: 14300000 },
-
-];
-
-// Top Performing Webinars
-const topWebinars = [
-    {
-        id: 1,
-        title: 'Website Security: Combatting Online Threats',
-        participants: 892,
-        revenue: 44600000,
-        category: 'Cybersecurity'
-    },
-];
+// Props type untuk data dari backend
+interface DashboardProps {
+    webinarCount: number;
+    upcomingWebinars: number;
+    pastWebinars: number;
+    freeWebinars: number;
+    paidWebinars: number;
+    totalRevenue?: number;
+    totalParticipants?: number;
+}
 
 // Helper function untuk format currency
 const formatCurrency = (amount: number) => {
@@ -48,183 +28,163 @@ const formatCurrency = (amount: number) => {
         style: 'currency',
         currency: 'IDR',
         minimumFractionDigits: 0,
-        maximumFractionDigits: 0
+        maximumFractionDigits: 0,
     }).format(amount);
 };
 
-export default function SellerDashboard() {
+export default function SellerDashboard({
+    webinarCount,
+    upcomingWebinars,
+    pastWebinars,
+    freeWebinars,
+    paidWebinars,
+    totalRevenue = 0,
+    totalParticipants = 0,
+}: DashboardProps) {
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs}>
             <Head title="Seller Dashboard" />
-            
+
             <div className="p-6">
                 {/* Welcome Section */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        Dashboard Seller
-                    </h1>
-                    <p className="text-gray-600 dark:text-gray-300">
-                        Selamat datang kembali! Berikut ringkasan performa webinar Anda.
-                    </p>
+                    <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">Dashboard Seller</h1>
+                    <p className="text-gray-600 dark:text-gray-300">Selamat datang kembali! Berikut ringkasan webinar Anda.</p>
                 </div>
 
                 {/* Key Metrics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    {/* Total Revenue */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+                <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                    {/* Total Webinars */}
+                    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Revenue</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {formatCurrency(dashboardData.totalRevenue)}
-                                </p>
+                                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Webinars</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{webinarCount}</p>
                             </div>
-                            <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-full">
-                                <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
+                            <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900/20">
+                                <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                             </div>
                         </div>
                     </div>
 
-                    {/* This Month Revenue */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+                    {/* Upcoming Webinars */}
+                    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">This Month Revenue</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {formatCurrency(dashboardData.thisMonthRevenue)}
-                                </p>
+                                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Upcoming Webinars</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{upcomingWebinars}</p>
                             </div>
-                            <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
-                                <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                            <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/20">
+                                <Calendar className="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                         </div>
                     </div>
 
-                    {/* Active Webinars */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+                    {/* Past Webinars */}
+                    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Webinars</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {dashboardData.activeWebinars}
-                                </p>
+                                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Past Webinars</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{pastWebinars}</p>
                             </div>
-                            <div className="p-3 bg-purple-100 dark:bg-purple-900/20 rounded-full">
-                                <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                            <div className="rounded-full bg-gray-100 p-3 dark:bg-gray-700">
+                                <Calendar className="h-6 w-6 text-gray-600 dark:text-gray-400" />
                             </div>
                         </div>
                     </div>
 
-                    {/* Total Participants */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Participants</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {dashboardData.totalParticipants.toLocaleString('id-ID')}
-                                </p>
-                            </div>
-                            <div className="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-full">
-                                <Users className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                    {/* Total Revenue (if available) */}
+                    {totalRevenue > 0 && (
+                        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Revenue</p>
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(totalRevenue)}</p>
+                                </div>
+                                <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/20">
+                                    <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
-                {/* Grafik & Data Visual */}
-                <div className="grid lg:grid-cols-2 gap-6 mb-8">
-                    {/* Revenue Chart */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                            Revenue Chart (12 Months)
-                        </h2>
-                        <div className="h-64">
-                            {/* Simple Bar Chart */}
-                            <div className="flex items-end justify-between h-48 space-x-2">
-                                {revenueChartData.map((data, index) => {
-                                    const maxRevenue = Math.max(...revenueChartData.map(d => d.revenue));
-                                    const height = (data.revenue / maxRevenue) * 100;
-                                    return (
-                                        <div key={index} className="flex flex-col items-center flex-1">
-                                            <div className="flex flex-col items-center mb-2">
-                                                <div 
-                                                    className="w-full bg-gradient-to-t from-blue-500 to-blue-300 rounded-t transition-all duration-500 hover:from-blue-600 hover:to-blue-400"
-                                                    style={{ height: `${height}%` }}
-                                                    title={`${data.month}: ${formatCurrency(data.revenue)}`}
-                                                ></div>
-                                            </div>
-                                            <span className="text-xs text-gray-600 dark:text-gray-300">{data.month}</span>
-                                        </div>
-                                    );
-                                })}
+                {/* Webinar Type Distribution */}
+                <div className="mb-8 grid gap-6 lg:grid-cols-2">
+                    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                        <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Webinar Distribution</h2>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <div className="h-4 w-4 rounded-full bg-green-500"></div>
+                                    <span className="text-gray-600 dark:text-gray-300">Free Webinars</span>
+                                </div>
+                                <span className="text-lg font-semibold text-gray-900 dark:text-white">{freeWebinars}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <div className="h-4 w-4 rounded-full bg-blue-500"></div>
+                                    <span className="text-gray-600 dark:text-gray-300">Paid Webinars</span>
+                                </div>
+                                <span className="text-lg font-semibold text-gray-900 dark:text-white">{paidWebinars}</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Top Performing Webinars */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                            Top Performing Webinars
-                        </h2>
+                    {/* Quick Stats */}
+                    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                        <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Quick Overview</h2>
                         <div className="space-y-4">
-                            {topWebinars.map((webinar, index) => (
-                                <div key={webinar.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="flex-shrink-0">
-                                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                                {index + 1}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h3 className="font-medium text-gray-900 dark:text-white line-clamp-1">
-                                                {webinar.title}
-                                            </h3>
-                                            <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
-                                                <span className="flex items-center">
-                                                    <Users className="w-4 h-4 mr-1" />
-                                                    {webinar.participants}
-                                                </span>
-                                                <span className="flex items-center">
-                                                    <DollarSign className="w-4 h-4 mr-1" />
-                                                    {formatCurrency(webinar.revenue)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                            {webinar.category}
-                                        </span>
-                                    </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Active Webinars</span>
+                                <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">{upcomingWebinars}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Completed Webinars</span>
+                                <span className="text-lg font-semibold text-green-600 dark:text-green-400">{pastWebinars}</span>
+                            </div>
+                            {totalParticipants > 0 && (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-600 dark:text-gray-300">Total Participants</span>
+                                    <span className="text-lg font-semibold text-purple-600 dark:text-purple-400">
+                                        {totalParticipants.toLocaleString('id-ID')}
+                                    </span>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* Quick Actions */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                        Quick Actions
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                    <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Quick Actions</h2>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         {/* Add New Webinar */}
-                        <button className="flex items-center justify-center p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 group">
-                            <Plus className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+                        <a
+                            href="/seller/webinar/create"
+                            className="group flex items-center justify-center rounded-lg bg-blue-600 p-4 text-white transition-colors duration-200 hover:bg-blue-700"
+                        >
+                            <Plus className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
                             <span className="font-medium">Add New Webinar</span>
-                        </button>
+                        </a>
 
-                        {/* View Analytics */}
-                        <button className="flex items-center justify-center p-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 group">
-                            <BarChart3 className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                            <span className="font-medium">View Analytics</span>
-                        </button>
+                        {/* View My Webinars */}
+                        <a
+                            href="/seller/my-webinars"
+                            className="group flex items-center justify-center rounded-lg bg-green-600 p-4 text-white transition-colors duration-200 hover:bg-green-700"
+                        >
+                            <Calendar className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
+                            <span className="font-medium">My Webinars</span>
+                        </a>
 
-                        {/* Withdraw Commission */}
-                        <button className="flex items-center justify-center p-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 group">
-                            <Wallet className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                            <span className="font-medium">Withdraw Commission</span>
-                        </button>
+                        {/* View Income */}
+                        <a
+                            href="/seller/income"
+                            className="group flex items-center justify-center rounded-lg bg-purple-600 p-4 text-white transition-colors duration-200 hover:bg-purple-700"
+                        >
+                            <DollarSign className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
+                            <span className="font-medium">View Income</span>
+                        </a>
                     </div>
                 </div>
             </div>

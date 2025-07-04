@@ -45,6 +45,10 @@ export interface User {
 
 // Webinar
 export interface Webinar {
+    registration_close_datetime: any;
+    redirect_url: string;
+    is_affiliatable: boolean;
+    affiliate_commission_percentage: any;
     id: number;
     title: string;
     description: string;
@@ -83,6 +87,11 @@ export interface Participant {
 }
 
 export interface PaginatedResponse<T> {
+    total: ReactNode;
+    from: ReactNode;
+    to: ReactNode;
+    current_page: ReactNode;
+    last_page: ReactNode;
     data: T[];
     links: {
         first: string | null;

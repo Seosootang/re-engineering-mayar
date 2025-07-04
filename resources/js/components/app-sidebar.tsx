@@ -3,18 +3,12 @@
 import { NavFooter } from '@/components/nav-footer';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavGroup, type NavItem } from '@/types';
+import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { History, HomeIcon, Plus, Settings2, UserCircle, Users, Wallet } from 'lucide-react';
+import { HomeIcon, Plus, Wallet } from 'lucide-react';
 import AppLogo from './app-logo';
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Settings',
-        href: '/seller/settings',
-        icon: Settings2,
-    },
-];
+const footerNavItems: NavItem[] = [];
 
 export function AppSidebar() {
     const { props } = usePage();
@@ -35,22 +29,14 @@ export function AppSidebar() {
         },
         {
             title: 'Product',
-            items: [{ title: 'Create Webinar', href: '/seller/webinar/create', icon: Plus }],
-        },
-        {
-            title: 'Platform',
             items: [
-                { title: 'Kelola Peserta', routeName: 'seller.webinars.participants.index', icon: Users, disabled: !webinar?.id },
-                { title: 'History Transaksi', href: '/seller/transactions', icon: History },
+                { title: 'My Webinars', href: '/seller/my-webinars', icon: HomeIcon },
+                { title: 'Create Webinar', href: '/seller/webinar/create', icon: Plus },
             ],
         },
         {
             title: 'Finansial',
             items: [{ title: 'Pemasukan', href: route('seller.income.index'), icon: Wallet }],
-        },
-        {
-            title: 'Akun Saya',
-            items: [{ title: 'Akun', href: '/seller/account', icon: UserCircle }],
         },
     ];
 
