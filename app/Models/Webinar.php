@@ -12,6 +12,11 @@ class Webinar extends Model
     protected $fillable = [
         'user_id',
         'title',
+        'speaker_name',
+        'speaker_description',
+        // --- ADDED ---
+        'speaker_image_path',
+        // --- END ADDED ---
         'payment_type',
         'price',
         'original_price',
@@ -40,6 +45,11 @@ class Webinar extends Model
         'sales_start_datetime' => 'datetime',
         'registration_close_datetime' => 'datetime',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function participants()
     {

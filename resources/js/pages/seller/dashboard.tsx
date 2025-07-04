@@ -18,19 +18,9 @@ interface DashboardProps {
     pastWebinars: number;
     freeWebinars: number;
     paidWebinars: number;
-    totalRevenue?: number;
+    totalIncome?: number;
     totalParticipants?: number;
 }
-
-// Helper function untuk format currency
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(amount);
-};
 
 export default function SellerDashboard({
     webinarCount,
@@ -38,7 +28,7 @@ export default function SellerDashboard({
     pastWebinars,
     freeWebinars,
     paidWebinars,
-    totalRevenue = 0,
+    totalIncome = 0,
     totalParticipants = 0,
 }: DashboardProps) {
     return (
@@ -93,20 +83,18 @@ export default function SellerDashboard({
                         </div>
                     </div>
 
-                    {/* Total Revenue (if available) */}
-                    {totalRevenue > 0 && (
-                        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Revenue</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(totalRevenue)}</p>
-                                </div>
-                                <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/20">
-                                    <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
-                                </div>
+                    {/* Total Pendapatan - Always show */}
+                    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Pendapatan</p>
+                                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">Rp {totalIncome.toLocaleString('id-ID')}</p>
+                            </div>
+                            <div className="rounded-full bg-green-100 p-3 dark:bg-green-900/20">
+                                <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
 
                 {/* Webinar Type Distribution */}
@@ -170,7 +158,7 @@ export default function SellerDashboard({
 
                         {/* View My Webinars */}
                         <a
-                            href="/seller/my-webinars"
+                            href="/seller/webinars"
                             className="group flex items-center justify-center rounded-lg bg-green-600 p-4 text-white transition-colors duration-200 hover:bg-green-700"
                         >
                             <Calendar className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />

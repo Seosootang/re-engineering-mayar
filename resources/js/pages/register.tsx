@@ -1,10 +1,13 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
-import AppHeaderLayout from '@/layouts/app/app-header-layout'; // Asumsi Anda menggunakan layout ini
+import AppHeaderLayout from '@/layouts/app/app-header-layout';
 import { BreadcrumbItem, type Webinar } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { Award, Calendar, CheckCircle, Clock, Users } from 'lucide-react';
+
+// Assuming a global route function is available from Ziggy
+declare function route(name: string, params?: any): string;
 
 interface RegisterProps {
     webinar: Webinar;
@@ -22,7 +25,7 @@ export default function Register({ webinar, isRegistered }: RegisterProps) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Dashboard',
-            href: '/dashboard',
+            href: route('dashboard'),
         },
         {
             title: webinar.title,
@@ -43,26 +46,39 @@ export default function Register({ webinar, isRegistered }: RegisterProps) {
                             src={
                                 webinar.cover_image_path
                                     ? `/storage/${webinar.cover_image_path}`
-                                    : 'https://via.placeholder.com/800x450?text=Webinar+Cover'
+                                    : 'https://placehold.co/800x450/e2e8f0/e2e8f0?text=+' // Placeholder
                             }
                             alt={webinar.title}
                             className="aspect-video w-full rounded-xl border object-cover shadow-lg"
                         />
 
-                        <div className="my-8 rounded-xl bg-muted p-6">
-                            <h2 className="mb-4 text-2xl font-bold">Tentang Pembicara</h2>
-                            <div className="flex items-center gap-4">
-                                <img src="https://i.pravatar.cc/150?u=speaker" alt="Nama Pembicara" className="h-20 w-20 rounded-full" />
-                                <div>
-                                    <h3 className="text-lg font-semibold">Nama Pembicara</h3>
-                                    <p className="text-sm text-muted-foreground">Jabatan, Perusahaan</p>
-                                    <p className="mt-1 text-sm">
-                                        Seorang praktisi dengan pengalaman lebih dari 10 tahun di industri. Telah membantu puluhan brand ternama
-                                        mencapai target mereka.
-                                    </p>
+                        {/* --- UPDATED SPEAKER SECTION --- */}
+                        {/* This section now dynamically displays speaker info and only renders if a speaker name is provided. */}
+                        {webinar.speaker_name && (
+                             <div className="my-8 rounded-xl bg-muted p-6">
+                                <h2 className="mb-4 text-2xl font-bold">Tentang Pembicara</h2>
+                                <div className="flex items-start gap-4">
+                                    <img 
+                                        src={
+                                            webinar.speaker_image_path 
+                                                ? `/storage/${webinar.speaker_image_path}`
+                                                // Fallback to a UI avatar with the speaker's initials
+                                                : `https://ui-avatars.com/api/?name=${encodeURIComponent(webinar.speaker_name)}&background=random&color=fff`
+                                        } 
+                                        alt={webinar.speaker_name} 
+                                        className="h-20 w-20 flex-shrink-0 rounded-full border-2 border-white object-cover shadow-md" 
+                                    />
+                                    <div>
+                                        <h3 className="text-xl font-semibold">{webinar.speaker_name}</h3>
+                                        {webinar.speaker_description && (
+                                            <p className="mt-1 text-sm text-muted-foreground">{webinar.speaker_description}</p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
+                        {/* --- END UPDATED SECTION --- */}
+
                     </div>
 
                     <div className="md:col-span-1">
@@ -93,7 +109,7 @@ export default function Register({ webinar, isRegistered }: RegisterProps) {
                                 ) : (
                                     <form onSubmit={handleSubmit} className="w-full">
                                         <Button type="submit" size="lg" disabled={processing} className="w-full cursor-pointer">
-                                            {processing ? 'Memproses...' : 'Daftar'}
+                                            {processing ? 'Memproses...' : 'Daftar Sekarang'}
                                         </Button>
                                     </form>
                                 )}
@@ -117,7 +133,7 @@ export default function Register({ webinar, isRegistered }: RegisterProps) {
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <Users className="h-7 w-7" />
+                                        <Users className="h-5 w-5" />
                                         <span>Tempat terbatas untuk pengalaman terbaik</span>
                                     </div>
                                     <div className="flex items-center gap-3">

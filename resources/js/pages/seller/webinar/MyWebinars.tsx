@@ -16,6 +16,9 @@ export default function MyWebinars({ webinars }: Props) {
 
     const { data, setData, put, processing, errors, reset } = useForm({
         title: '',
+        speaker_name: '',
+        speaker_description: '',
+        speaker_image_path: null as File | null,
         payment_type: 'free',
         price: '',
         original_price: '',
@@ -23,6 +26,7 @@ export default function MyWebinars({ webinars }: Props) {
         webinar_link: '',
         start_datetime: '',
         end_datetime: '',
+        cover_image_path: null as File | null,
         instructions: '',
         terms_and_conditions: '',
         sales_start_datetime: '',
@@ -55,13 +59,17 @@ export default function MyWebinars({ webinars }: Props) {
         setSelectedWebinar(webinar);
         setData({
             title: webinar.title,
+            speaker_name: webinar.speaker_name || '',
+            speaker_description: webinar.speaker_description || '',
+            speaker_image_path: null,
             payment_type: webinar.payment_type,
             price: webinar.price?.toString() || '',
             original_price: webinar.original_price?.toString() || '',
             description: webinar.description,
             webinar_link: webinar.webinar_link,
-            start_datetime: webinar.start_datetime.slice(0, 16), // Format for datetime-local input
+            start_datetime: webinar.start_datetime.slice(0, 16),
             end_datetime: webinar.end_datetime ? webinar.end_datetime.slice(0, 16) : '',
+            cover_image_path: null,
             instructions: webinar.instructions || '',
             terms_and_conditions: webinar.terms_and_conditions || '',
             sales_start_datetime: webinar.start_datetime ? webinar.start_datetime.slice(0, 16) : '',
@@ -82,6 +90,7 @@ export default function MyWebinars({ webinars }: Props) {
         e.preventDefault();
         if (selectedWebinar) {
             put(route('webinars.update', selectedWebinar.id), {
+                forceFormData: true,
                 onFinish: () => {
                     if (Object.keys(errors).length === 0) {
                         setEditModalOpen(false);
@@ -136,6 +145,14 @@ export default function MyWebinars({ webinars }: Props) {
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
                                         <h2 className="text-xl font-semibold">{webinar.title}</h2>
+                                        {webinar.speaker_name && (
+                                            <p className="mt-1 text-sm text-gray-600">
+                                                <span className="font-medium">Speaker:</span> {webinar.speaker_name}
+                                                {webinar.speaker_description && (
+                                                    <span className="text-gray-500"> - {webinar.speaker_description}</span>
+                                                )}
+                                            </p>
+                                        )}
                                         <p className="mt-1 text-sm text-gray-600">{formatDateTime(webinar.start_datetime)}</p>
                                         <p className="mt-2 line-clamp-2 text-sm text-gray-500">{webinar.description}</p>
                                         <div className="mt-2 flex items-center gap-3">
@@ -204,6 +221,16 @@ export default function MyWebinars({ webinars }: Props) {
 
                             <div>
                                 <h3 className="text-lg font-semibold">{selectedWebinar.title}</h3>
+                                {selectedWebinar.speaker_name && (
+                                    <div className="mt-1">
+                                        <p className="text-sm text-gray-600">
+                                            <span className="font-medium">Speaker:</span> {selectedWebinar.speaker_name}
+                                        </p>
+                                        {selectedWebinar.speaker_description && (
+                                            <p className="text-sm text-gray-500">{selectedWebinar.speaker_description}</p>
+                                        )}
+                                    </div>
+                                )}
                                 <div className="mt-2 flex items-center gap-3">
                                     {getStatusBadge(selectedWebinar.start_datetime, selectedWebinar.end_datetime)}
                                     <span className="text-sm font-medium text-green-600">
@@ -291,6 +318,43 @@ export default function MyWebinars({ webinars }: Props) {
                                     required
                                 />
                                 {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Speaker Name</label>
+                                    <input
+                                        type="text"
+                                        value={data.speaker_name}
+                                        onChange={(e) => setData('speaker_name', e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        required
+                                    />
+                                    {errors.speaker_name && <p className="text-sm text-red-500">{errors.speaker_name}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Speaker Description</label>
+                                    <input
+                                        type="text"
+                                        value={data.speaker_description}
+                                        onChange={(e) => setData('speaker_description', e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        placeholder="e.g., CEO of Example Inc."
+                                    />
+                                    {errors.speaker_description && <p className="text-sm text-red-500">{errors.speaker_description}</p>}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Speaker Image</label>
+                                <input
+                                    type="file"
+                                    onChange={(e) => setData('speaker_image_path', e.target.files ? e.target.files[0] : null)}
+                                    accept="image/jpeg,image/jpg,image/png"
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                />
+                                <p className="text-sm text-gray-500 mt-1">Max size: 2MB</p>
+                                {errors.speaker_image_path && <p className="text-sm text-red-500">{errors.speaker_image_path}</p>}
                             </div>
 
                             <div>
@@ -384,14 +448,87 @@ export default function MyWebinars({ webinars }: Props) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Max Participants</label>
+                                <label className="block text-sm font-medium text-gray-700">Cover Image</label>
                                 <input
-                                    type="number"
-                                    value={data.max_participants}
-                                    onChange={(e) => setData('max_participants', e.target.value)}
+                                    type="file"
+                                    onChange={(e) => setData('cover_image_path', e.target.files ? e.target.files[0] : null)}
+                                    accept="image/jpeg,image/jpg,image/png"
                                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 />
-                                {errors.max_participants && <p className="text-sm text-red-500">{errors.max_participants}</p>}
+                                <p className="text-sm text-gray-500 mt-1">Max size: 2MB</p>
+                                {errors.cover_image_path && <p className="text-sm text-red-500">{errors.cover_image_path}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Instructions</label>
+                                <textarea
+                                    value={data.instructions}
+                                    onChange={(e) => setData('instructions', e.target.value)}
+                                    rows={3}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    placeholder="Any special instructions for participants..."
+                                />
+                                {errors.instructions && <p className="text-sm text-red-500">{errors.instructions}</p>}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Terms and Conditions</label>
+                                <textarea
+                                    value={data.terms_and_conditions}
+                                    onChange={(e) => setData('terms_and_conditions', e.target.value)}
+                                    rows={3}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    placeholder="Enter terms and conditions..."
+                                />
+                                {errors.terms_and_conditions && <p className="text-sm text-red-500">{errors.terms_and_conditions}</p>}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Sales Start</label>
+                                    <input
+                                        type="datetime-local"
+                                        value={data.sales_start_datetime}
+                                        onChange={(e) => setData('sales_start_datetime', e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    />
+                                    {errors.sales_start_datetime && <p className="text-sm text-red-500">{errors.sales_start_datetime}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Registration Close</label>
+                                    <input
+                                        type="datetime-local"
+                                        value={data.registration_close_datetime}
+                                        onChange={(e) => setData('registration_close_datetime', e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    />
+                                    {errors.registration_close_datetime && <p className="text-sm text-red-500">{errors.registration_close_datetime}</p>}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Max Participants</label>
+                                    <input
+                                        type="number"
+                                        value={data.max_participants}
+                                        onChange={(e) => setData('max_participants', e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        placeholder="Leave empty for unlimited"
+                                    />
+                                    {errors.max_participants && <p className="text-sm text-red-500">{errors.max_participants}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Redirect URL</label>
+                                    <input
+                                        type="url"
+                                        value={data.redirect_url}
+                                        onChange={(e) => setData('redirect_url', e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        placeholder="https://example.com/thank-you"
+                                    />
+                                    {errors.redirect_url && <p className="text-sm text-red-500">{errors.redirect_url}</p>}
+                                </div>
                             </div>
 
                             <div>
@@ -416,7 +553,9 @@ export default function MyWebinars({ webinars }: Props) {
                                         value={data.affiliate_commission_percentage}
                                         onChange={(e) => setData('affiliate_commission_percentage', e.target.value)}
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        placeholder="e.g., 10"
                                     />
+                                    <p className="text-sm text-gray-500 mt-1">Percentage of sales to pay affiliates (0-100%)</p>
                                     {errors.affiliate_commission_percentage && (
                                         <p className="text-sm text-red-500">{errors.affiliate_commission_percentage}</p>
                                     )}

@@ -1,21 +1,26 @@
 import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/seller',
-    },
-    {
-        title: 'Create Webinar',
-        href: '/seller/webinar/create',
-    },
+    { title: 'Dashboard', href: '/seller' },
+    { title: 'My Webinars', href: '/seller/webinars/my' },
+    { title: 'Create Webinar', href: '/seller/webinar/create' },
 ];
 
 export default function CreateWebinar() {
     const { data, setData, post, processing, errors } = useForm({
         title: '',
+        speaker_name: '',
+        speaker_description: '',
+        speaker_image_path: null as File | null,
         payment_type: 'free',
         price: '',
         original_price: '',
@@ -23,7 +28,7 @@ export default function CreateWebinar() {
         webinar_link: '',
         start_datetime: '',
         end_datetime: '',
-        cover_image_path: null,
+        cover_image_path: null as File | null,
         instructions: '',
         terms_and_conditions: '',
         sales_start_datetime: '',
@@ -36,273 +41,290 @@ export default function CreateWebinar() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Fixed: Changed from '/seller/webinar/store' to '/seller/webinars'
-        post('/seller/webinars');
+        // Use forceFormData to ensure file uploads are handled correctly.
+        post('/seller/webinars', {
+            forceFormData: true,
+        });
     };
 
     return (
         <AppSidebarLayout breadcrumbs={breadcrumbs}>
             <Head title="Create Webinar" />
             
-            <div className="p-6">
-                <h1 className="text-2xl font-bold mb-6">Create New Webinar</h1>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Title */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Title *</label>
-                        <input
-                            type="text"
-                            value={data.title}
-                            onChange={(e) => setData('title', e.target.value)}
-                            className="w-full p-2 border rounded-lg"
-                            placeholder="Enter webinar title..."
-                            required
-                        />
-                        {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
-                    </div>
-
-                    {/* Payment Type */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Payment Type *</label>
-                        <select
-                            value={data.payment_type}
-                            onChange={(e) => setData('payment_type', e.target.value)}
-                            className="w-full p-2 border rounded-lg"
-                            required
-                        >
-                            <option value="free">Free</option>
-                            <option value="paid">Paid</option>
-                            <option value="pay_what_you_want">Pay What You Want</option>
-                        </select>
-                        {errors.payment_type && <p className="text-red-500 text-sm mt-1">{errors.payment_type}</p>}
-                    </div>
-
-                    {/* Price Fields - Only show if not free */}
-                    {data.payment_type !== 'free' && (
-                        <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Price *</label>
-                                <input
-                                    type="number"
-                                    value={data.price}
-                                    onChange={(e) => setData('price', e.target.value)}
-                                    className="w-full p-2 border rounded-lg"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                />
-                                {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
+            <div className="p-4 md:p-6">
+                <form onSubmit={handleSubmit}>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Create New Webinar</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            {/* --- Main Webinar Details --- */}
+                            <div className="space-y-4">
+                                <div>
+                                    <Label htmlFor="title">Title *</Label>
+                                    <Input
+                                        id="title"
+                                        type="text"
+                                        value={data.title}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('title', e.target.value)}
+                                        placeholder="Enter webinar title..."
+                                        required
+                                    />
+                                    {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+                                </div>
+                                <div>
+                                    <Label htmlFor="description">Description *</Label>
+                                    <Textarea
+                                        id="description"
+                                        value={data.description}
+                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setData('description', e.target.value)}
+                                        rows={5}
+                                        placeholder="Describe your webinar..."
+                                        required
+                                    />
+                                    {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+                                </div>
+                                <div>
+                                    <Label htmlFor="cover_image_path">Webinar Cover Image (Optional)</Label>
+                                    <Input
+                                        id="cover_image_path"
+                                        type="file"
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('cover_image_path', e.target.files ? e.target.files[0] : null)}
+                                        accept="image/jpeg,image/jpg,image/png"
+                                    />
+                                    <p className="text-sm text-muted-foreground mt-1">Max size: 2MB</p>
+                                    {errors.cover_image_path && <p className="text-red-500 text-sm mt-1">{errors.cover_image_path}</p>}
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Original Price (Optional)</label>
-                                <input
-                                    type="number"
-                                    value={data.original_price}
-                                    onChange={(e) => setData('original_price', e.target.value)}
-                                    className="w-full p-2 border rounded-lg"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                />
-                                {errors.original_price && <p className="text-red-500 text-sm mt-1">{errors.original_price}</p>}
+                            {/* --- Speaker Details --- */}
+                            <Card className="bg-muted/40">
+                                <CardHeader>
+                                    <CardTitle className="text-lg">Speaker Details</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div>
+                                            <Label htmlFor="speaker_name">Speaker Name *</Label>
+                                            <Input
+                                                id="speaker_name"
+                                                type="text"
+                                                value={data.speaker_name}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('speaker_name', e.target.value)}
+                                                placeholder="Enter speaker's name..."
+                                                required
+                                            />
+                                            {errors.speaker_name && <p className="text-red-500 text-sm mt-1">{errors.speaker_name}</p>}
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="speaker_description">Speaker Description (Optional)</Label>
+                                            <Input
+                                                id="speaker_description"
+                                                type="text"
+                                                value={data.speaker_description}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('speaker_description', e.target.value)}
+                                                placeholder="e.g., CEO of Example Inc."
+                                            />
+                                            {errors.speaker_description && <p className="text-red-500 text-sm mt-1">{errors.speaker_description}</p>}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="speaker_image_path">Speaker Image (Optional)</Label>
+                                        <Input
+                                            id="speaker_image_path"
+                                            type="file"
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('speaker_image_path', e.target.files ? e.target.files[0] : null)}
+                                            accept="image/jpeg,image/jpg,image/png"
+                                        />
+                                        <p className="text-sm text-muted-foreground mt-1">Max size: 2MB</p>
+                                        {errors.speaker_image_path && <p className="text-red-500 text-sm mt-1">{errors.speaker_image_path}</p>}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* --- Pricing and Payment --- */}
+                             <Card className="bg-muted/40">
+                                <CardHeader>
+                                    <CardTitle className="text-lg">Pricing</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div>
+                                        <Label htmlFor="payment_type">Payment Type *</Label>
+                                        <Select onValueChange={(value: string) => setData('payment_type', value)} value={data.payment_type}>
+                                            <SelectTrigger id="payment_type">
+                                                <SelectValue placeholder="Select payment type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="free">Free</SelectItem>
+                                                <SelectItem value="paid">Paid</SelectItem>
+                                                <SelectItem value="pay_what_you_want">Pay What You Want</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.payment_type && <p className="text-red-500 text-sm mt-1">{errors.payment_type}</p>}
+                                    </div>
+                                    {data.payment_type !== 'free' && (
+                                        <div className="grid md:grid-cols-2 gap-6">
+                                            <div>
+                                                <Label htmlFor="price">Price *</Label>
+                                                <Input
+                                                    id="price" type="number" value={data.price}
+                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('price', e.target.value)}
+                                                    min="0" step="any" placeholder="0" required={data.payment_type !== 'free'}
+                                                />
+                                                {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="original_price">Original Price (Optional)</Label>
+                                                <Input
+                                                    id="original_price" type="number" value={data.original_price}
+                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('original_price', e.target.value)}
+                                                    min="0" step="any" placeholder="0"
+                                                />
+                                                {errors.original_price && <p className="text-red-500 text-sm mt-1">{errors.original_price}</p>}
+                                            </div>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+
+                            {/* --- Schedule and Access --- */}
+                             <Card className="bg-muted/40">
+                                <CardHeader>
+                                    <CardTitle className="text-lg">Schedule & Access</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                     <div>
+                                        <Label htmlFor="webinar_link">Webinar Link *</Label>
+                                        <Input
+                                            id="webinar_link" type="url" value={data.webinar_link}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('webinar_link', e.target.value)}
+                                            placeholder="https://zoom.us/j/..." required
+                                        />
+                                        {errors.webinar_link && <p className="text-red-500 text-sm mt-1">{errors.webinar_link}</p>}
+                                    </div>
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div>
+                                            <Label htmlFor="start_datetime">Start Date & Time *</Label>
+                                            <Input
+                                                id="start_datetime" type="datetime-local" value={data.start_datetime}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('start_datetime', e.target.value)} required
+                                            />
+                                            {errors.start_datetime && <p className="text-red-500 text-sm mt-1">{errors.start_datetime}</p>}
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="end_datetime">End Date & Time (Optional)</Label>
+                                            <Input
+                                                id="end_datetime" type="datetime-local" value={data.end_datetime}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('end_datetime', e.target.value)}
+                                            />
+                                            {errors.end_datetime && <p className="text-red-500 text-sm mt-1">{errors.end_datetime}</p>}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* --- Additional Settings --- */}
+                             <Card className="bg-muted/40">
+                                <CardHeader>
+                                    <CardTitle className="text-lg">Additional Settings</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                     <div>
+                                        <Label htmlFor="instructions">Instructions (Optional)</Label>
+                                        <Textarea
+                                            id="instructions" value={data.instructions}
+                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setData('instructions', e.target.value)}
+                                            rows={3} placeholder="Any special instructions for participants..."
+                                        />
+                                        {errors.instructions && <p className="text-red-500 text-sm mt-1">{errors.instructions}</p>}
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="terms_and_conditions">Terms and Conditions (Optional)</Label>
+                                        <Textarea
+                                            id="terms_and_conditions" value={data.terms_and_conditions}
+                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setData('terms_and_conditions', e.target.value)}
+                                            rows={3} placeholder="Enter terms and conditions..."
+                                        />
+                                        {errors.terms_and_conditions && <p className="text-red-500 text-sm mt-1">{errors.terms_and_conditions}</p>}
+                                    </div>
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div>
+                                            <Label htmlFor="sales_start_datetime">Sales Start (Optional)</Label>
+                                            <Input
+                                                id="sales_start_datetime" type="datetime-local" value={data.sales_start_datetime}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('sales_start_datetime', e.target.value)}
+                                            />
+                                            {errors.sales_start_datetime && <p className="text-red-500 text-sm mt-1">{errors.sales_start_datetime}</p>}
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="registration_close_datetime">Registration Close (Optional)</Label>
+                                            <Input
+                                                id="registration_close_datetime" type="datetime-local" value={data.registration_close_datetime}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('registration_close_datetime', e.target.value)}
+                                            />
+                                            {errors.registration_close_datetime && <p className="text-red-500 text-sm mt-1">{errors.registration_close_datetime}</p>}
+                                        </div>
+                                    </div>
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div>
+                                            <Label htmlFor="max_participants">Max Participants (Optional)</Label>
+                                            <Input
+                                                id="max_participants" type="number" value={data.max_participants}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('max_participants', e.target.value)}
+                                                min="1" placeholder="Leave empty for unlimited"
+                                            />
+                                            {errors.max_participants && <p className="text-red-500 text-sm mt-1">{errors.max_participants}</p>}
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="redirect_url">Redirect URL (Optional)</Label>
+                                            <Input
+                                                id="redirect_url" type="url" value={data.redirect_url}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('redirect_url', e.target.value)}
+                                                placeholder="https://example.com/thank-you"
+                                            />
+                                            {errors.redirect_url && <p className="text-red-500 text-sm mt-1">{errors.redirect_url}</p>}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            
+                            {/* --- Affiliate Settings --- */}
+                            <Card className="bg-muted/40">
+                                <CardHeader>
+                                    <CardTitle className="text-lg">Affiliate Settings</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id="is_affiliatable"
+                                            checked={data.is_affiliatable}
+                                            onCheckedChange={(checked: boolean) => setData('is_affiliatable', checked)}
+                                        />
+                                        <Label htmlFor="is_affiliatable" className="font-medium leading-none">Enable affiliate program</Label>
+                                    </div>
+                                    {data.is_affiliatable && (
+                                        <div>
+                                            <Label htmlFor="affiliate_commission_percentage">Commission Percentage *</Label>
+                                            <Input
+                                                id="affiliate_commission_percentage" type="number" value={data.affiliate_commission_percentage}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('affiliate_commission_percentage', e.target.value)}
+                                                min="0" max="100" step="any" placeholder="e.g., 10" required={data.is_affiliatable}
+                                            />
+                                            <p className="text-sm text-muted-foreground mt-1">Percentage of sales to pay affiliates (0-100%)</p>
+                                            {errors.affiliate_commission_percentage && <p className="text-red-500 text-sm mt-1">{errors.affiliate_commission_percentage}</p>}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                            
+                            {/* --- Submit Button --- */}
+                            <div className="pt-4 flex justify-end">
+                                <Button type="submit" disabled={processing} size="lg">
+                                    {processing ? 'Creating Webinar...' : 'Create Webinar'}
+                                </Button>
                             </div>
-                        </div>
-                    )}
-
-                    {/* Description */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Description *</label>
-                        <textarea
-                            value={data.description}
-                            onChange={(e) => setData('description', e.target.value)}
-                            rows={4}
-                            className="w-full p-2 border rounded-lg"
-                            placeholder="Describe your webinar..."
-                            required
-                        />
-                        {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
-                    </div>
-
-                    {/* Webinar Link */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Webinar Link *</label>
-                        <input
-                            type="url"
-                            value={data.webinar_link}
-                            onChange={(e) => setData('webinar_link', e.target.value)}
-                            className="w-full p-2 border rounded-lg"
-                            placeholder="https://zoom.us/j/..."
-                            required
-                        />
-                        {errors.webinar_link && <p className="text-red-500 text-sm mt-1">{errors.webinar_link}</p>}
-                    </div>
-
-                    {/* Date & Time */}
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Start Date & Time *</label>
-                            <input
-                                type="datetime-local"
-                                value={data.start_datetime}
-                                onChange={(e) => setData('start_datetime', e.target.value)}
-                                className="w-full p-2 border rounded-lg"
-                                required
-                            />
-                            {errors.start_datetime && <p className="text-red-500 text-sm mt-1">{errors.start_datetime}</p>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">End Date & Time (Optional)</label>
-                            <input
-                                type="datetime-local"
-                                value={data.end_datetime}
-                                onChange={(e) => setData('end_datetime', e.target.value)}
-                                className="w-full p-2 border rounded-lg"
-                            />
-                            {errors.end_datetime && <p className="text-red-500 text-sm mt-1">{errors.end_datetime}</p>}
-                        </div>
-                    </div>
-
-                    {/* Cover Image */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Cover Image (Optional)</label>
-                        <input
-                            type="file"
-                            onChange={(e) => setData('cover_image_path', e.target.files?.[0] as any)}
-                            accept="image/jpeg,image/jpg,image/png"
-                            className="w-full p-2 border rounded-lg"
-                        />
-                        <p className="text-sm text-gray-500 mt-1">Accepted formats: JPG, JPEG, PNG. Max size: 2MB</p>
-                        {errors.cover_image_path && <p className="text-red-500 text-sm mt-1">{errors.cover_image_path}</p>}
-                    </div>
-
-                    {/* Instructions */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Instructions (Optional)</label>
-                        <textarea
-                            value={data.instructions}
-                            onChange={(e) => setData('instructions', e.target.value)}
-                            rows={3}
-                            className="w-full p-2 border rounded-lg"
-                            placeholder="Any special instructions for participants..."
-                        />
-                        {errors.instructions && <p className="text-red-500 text-sm mt-1">{errors.instructions}</p>}
-                    </div>
-
-                    {/* Terms & Conditions */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Terms and Conditions (Optional)</label>
-                        <textarea
-                            value={data.terms_and_conditions}
-                            onChange={(e) => setData('terms_and_conditions', e.target.value)}
-                            rows={3}
-                            className="w-full p-2 border rounded-lg"
-                            placeholder="Enter terms and conditions..."
-                        />
-                        {errors.terms_and_conditions && <p className="text-red-500 text-sm mt-1">{errors.terms_and_conditions}</p>}
-                    </div>
-
-                    {/* Sales & Registration Settings */}
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Sales Start Date & Time (Optional)</label>
-                            <input
-                                type="datetime-local"
-                                value={data.sales_start_datetime}
-                                onChange={(e) => setData('sales_start_datetime', e.target.value)}
-                                className="w-full p-2 border rounded-lg"
-                            />
-                            {errors.sales_start_datetime && <p className="text-red-500 text-sm mt-1">{errors.sales_start_datetime}</p>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Registration Close Date & Time (Optional)</label>
-                            <input
-                                type="datetime-local"
-                                value={data.registration_close_datetime}
-                                onChange={(e) => setData('registration_close_datetime', e.target.value)}
-                                className="w-full p-2 border rounded-lg"
-                            />
-                            {errors.registration_close_datetime && <p className="text-red-500 text-sm mt-1">{errors.registration_close_datetime}</p>}
-                        </div>
-                    </div>
-
-                    {/* Max Participants & Redirect URL */}
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Max Participants (Optional)</label>
-                            <input
-                                type="number"
-                                value={data.max_participants}
-                                onChange={(e) => setData('max_participants', e.target.value)}
-                                className="w-full p-2 border rounded-lg"
-                                min="1"
-                                placeholder="Leave empty for unlimited"
-                            />
-                            {errors.max_participants && <p className="text-red-500 text-sm mt-1">{errors.max_participants}</p>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Redirect URL (Optional)</label>
-                            <input
-                                type="url"
-                                value={data.redirect_url}
-                                onChange={(e) => setData('redirect_url', e.target.value)}
-                                className="w-full p-2 border rounded-lg"
-                                placeholder="https://example.com/thank-you"
-                            />
-                            {errors.redirect_url && <p className="text-red-500 text-sm mt-1">{errors.redirect_url}</p>}
-                        </div>
-                    </div>
-
-                    {/* Affiliate Settings */}
-                    <div className="border rounded-lg p-4 bg-gray-50">
-                        <h3 className="text-lg font-medium mb-3">Affiliate Settings</h3>
-                        
-                        <div className="mb-3">
-                            <label className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    checked={data.is_affiliatable}
-                                    onChange={(e) => setData('is_affiliatable', e.target.checked)}
-                                    className="mr-2"
-                                />
-                                <span className="text-sm font-medium">Enable affiliate program for this webinar</span>
-                            </label>
-                        </div>
-
-                        {data.is_affiliatable && (
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Affiliate Commission Percentage *</label>
-                                <input
-                                    type="number"
-                                    value={data.affiliate_commission_percentage}
-                                    onChange={(e) => setData('affiliate_commission_percentage', e.target.value)}
-                                    className="w-full p-2 border rounded-lg"
-                                    min="0"
-                                    max="100"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    required={data.is_affiliatable}
-                                />
-                                <p className="text-sm text-gray-500 mt-1">Percentage of sales to pay to affiliates (0-100%)</p>
-                                {errors.affiliate_commission_percentage && <p className="text-red-500 text-sm mt-1">{errors.affiliate_commission_percentage}</p>}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="pt-4">
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {processing ? 'Creating Webinar...' : 'Create Webinar'}
-                        </button>
-                    </div>
+                        </CardContent>
+                    </Card>
                 </form>
             </div>
         </AppSidebarLayout>

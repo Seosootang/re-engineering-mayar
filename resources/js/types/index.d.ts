@@ -45,6 +45,9 @@ export interface User {
 
 // Webinar
 export interface Webinar {
+    speaker_image_path: any;
+    speaker_name: string;
+    speaker_description: string;
     registration_close_datetime: any;
     redirect_url: string;
     is_affiliatable: boolean;

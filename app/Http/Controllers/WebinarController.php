@@ -27,6 +27,9 @@ class WebinarController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
+            'speaker_name' => 'required|string|max:255',
+            'speaker_description' => 'nullable|string|max:255',
+            'speaker_image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // ADDED
             'payment_type' => 'required|in:paid,free,pay_what_you_want',
             'price' => 'nullable|numeric|min:0',
             'original_price' => 'nullable|numeric|min:0',
@@ -55,13 +58,18 @@ class WebinarController extends Controller
             $data['cover_image_path'] = $imagePath;
         }
 
-        // Set price to null if payment type is free
+        // Handle speaker image upload - ADDED
+        if ($request->hasFile('speaker_image_path')) {
+            $speakerImage = $request->file('speaker_image_path');
+            $speakerImagePath = $speakerImage->store('speakers', 'public');
+            $data['speaker_image_path'] = $speakerImagePath;
+        }
+
         if ($data['payment_type'] === 'free') {
             $data['price'] = null;
             $data['original_price'] = null;
         }
 
-        // Set affiliate commission to null if not affiliatable
         if (!$data['is_affiliatable']) {
             $data['affiliate_commission_percentage'] = null;
         }
@@ -91,6 +99,9 @@ class WebinarController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
+            'speaker_name' => 'required|string|max:255',
+            'speaker_description' => 'nullable|string|max:255',
+            'speaker_image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // ADDED
             'payment_type' => 'required|in:paid,free,pay_what_you_want',
             'price' => 'nullable|numeric|min:0',
             'original_price' => 'nullable|numeric|min:0',
@@ -114,26 +125,33 @@ class WebinarController extends Controller
 
         // Handle cover image upload
         if ($request->hasFile('cover_image_path')) {
-            // Delete old image if exists
             if ($webinar->cover_image_path) {
                 Storage::disk('public')->delete($webinar->cover_image_path);
             }
-
             $image = $request->file('cover_image_path');
             $imagePath = $image->store('webinars', 'public');
             $data['cover_image_path'] = $imagePath;
         } else {
-            // Keep existing image
             unset($data['cover_image_path']);
         }
 
-        // Set price to null if payment type is free
+        // Handle speaker image upload - ADDED
+        if ($request->hasFile('speaker_image_path')) {
+            if ($webinar->speaker_image_path) {
+                Storage::disk('public')->delete($webinar->speaker_image_path);
+            }
+            $speakerImage = $request->file('speaker_image_path');
+            $speakerImagePath = $speakerImage->store('speakers', 'public');
+            $data['speaker_image_path'] = $speakerImagePath;
+        } else {
+            unset($data['speaker_image_path']);
+        }
+
         if ($data['payment_type'] === 'free') {
             $data['price'] = null;
             $data['original_price'] = null;
         }
 
-        // Set affiliate commission to null if not affiliatable
         if (!$data['is_affiliatable']) {
             $data['affiliate_commission_percentage'] = null;
         }
@@ -147,9 +165,13 @@ class WebinarController extends Controller
     {
         $webinar = Webinar::findOrFail($id);
 
-        // Delete cover image if exists
         if ($webinar->cover_image_path) {
             Storage::disk('public')->delete($webinar->cover_image_path);
+        }
+
+        // Delete speaker image when deleting webinar - ADDED
+        if ($webinar->speaker_image_path) {
+            Storage::disk('public')->delete($webinar->speaker_image_path);
         }
 
         $webinar->delete();
@@ -157,7 +179,6 @@ class WebinarController extends Controller
         return redirect()->route('webinars.index')->with('success', 'Webinar deleted successfully.');
     }
 
-    // User dashboard - show upcoming webinars
     public function userDashboard()
     {
         $upcomingWebinars = Webinar::where('start_datetime', '>', now())
@@ -170,12 +191,10 @@ class WebinarController extends Controller
         ]);
     }
 
-    // Seller dashboard - show webinar statistics FOR AUTHENTICATED USER ONLY
     public function sellerDashboard()
     {
         $userId = Auth::id();
         
-        // Filter all queries by the authenticated user
         $webinarCount = Webinar::where('user_id', $userId)->count();
         $upcomingWebinars = Webinar::where('user_id', $userId)
             ->where('start_datetime', '>', now())
@@ -189,17 +208,13 @@ class WebinarController extends Controller
         $paidWebinars = Webinar::where('user_id', $userId)
             ->where('payment_type', 'paid')
             ->count();
-
-        // Calculate total revenue for this user
         $totalRevenue = Webinar::where('user_id', $userId)
             ->where('payment_type', 'paid')
-            ->sum('price');
-
-        // If you have a participants table, calculate total participants
-        // $totalParticipants = Webinar::where('user_id', $userId)
-        //     ->withCount('participants')
-        //     ->get()
-        //     ->sum('participants_count');
+            ->with('participants')
+            ->get()
+            ->sum(function ($webinar) {
+                return $webinar->participants->sum('amount');
+            });
 
         return Inertia::render('seller/dashboard', [
             'webinarCount' => $webinarCount,
@@ -208,11 +223,9 @@ class WebinarController extends Controller
             'freeWebinars' => $freeWebinars,
             'paidWebinars' => $paidWebinars,
             'totalRevenue' => $totalRevenue,
-            // 'totalParticipants' => $totalParticipants ?? 0,
         ]);
     }
 
-    // Public webinar listing for users
     public function publicIndex()
     {
         $webinars = Webinar::where('start_datetime', '>', now())
@@ -232,12 +245,10 @@ class WebinarController extends Controller
         ]);
     }
 
-    // Public webinar detail for users
     public function publicShow(string $id)
     {
         $webinar = Webinar::findOrFail($id);
 
-        // Check if webinar is available for registration
         $canRegister = $webinar->start_datetime > now() &&
             ($webinar->sales_start_datetime === null || $webinar->sales_start_datetime <= now()) &&
             ($webinar->registration_close_datetime === null || $webinar->registration_close_datetime > now());
