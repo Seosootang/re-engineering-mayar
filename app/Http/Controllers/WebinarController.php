@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\InvoiceWebinar;
+use App\Models\Participant;
 use App\Models\Webinar;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class WebinarController extends Controller
 {
     public function index()
     {
-        $webinars = Webinar::latest()->get();
+        // Sebaiknya hanya tampilkan webinar milik seller yang login
+        $webinars = Webinar::where('user_id', Auth::id())->latest()->get();
         return Inertia::render('seller/webinars/index', [
             'webinars' => $webinars
         ]);
@@ -29,10 +33,10 @@ class WebinarController extends Controller
             'title' => 'required|string|max:255',
             'speaker_name' => 'required|string|max:255',
             'speaker_description' => 'nullable|string|max:255',
-            'speaker_image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // ADDED
+            'speaker_image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'payment_type' => 'required|in:paid,free,pay_what_you_want',
-            'price' => 'nullable|numeric|min:0',
-            'original_price' => 'nullable|numeric|min:0',
+            'price' => 'nullable|integer|min:0',
+            'original_price' => 'nullable|integer|min:0',
             'description' => 'required|string',
             'webinar_link' => 'required|url',
             'start_datetime' => 'required|date|after:now',
@@ -40,8 +44,8 @@ class WebinarController extends Controller
             'cover_image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'instructions' => 'nullable|string',
             'terms_and_conditions' => 'nullable|string',
-            'sales_start_datetime' => 'nullable|date',
-            'registration_close_datetime' => 'nullable|date|before:start_datetime',
+            'sales_start_datetime' => 'required|date',
+            'registration_close_datetime' => 'required|date|before:start_datetime',
             'max_participants' => 'nullable|integer|min:1',
             'redirect_url' => 'nullable|url',
             'is_affiliatable' => 'boolean',
@@ -58,12 +62,21 @@ class WebinarController extends Controller
             $data['cover_image_path'] = $imagePath;
         }
 
-        // Handle speaker image upload - ADDED
+        // Handle speaker image upload
         if ($request->hasFile('speaker_image_path')) {
             $speakerImage = $request->file('speaker_image_path');
             $speakerImagePath = $speakerImage->store('speakers', 'public');
             $data['speaker_image_path'] = $speakerImagePath;
         }
+
+        // --- PERBAIKAN: Lakukan casting secara manual untuk memastikan integer ---
+        if (isset($data['price']) && $data['price'] !== '') {
+            $data['price'] = (int) $data['price'];
+        }
+        if (isset($data['original_price']) && $data['original_price'] !== '') {
+            $data['original_price'] = (int) $data['original_price'];
+        }
+        // --------------------------------------------------------------------
 
         if ($data['payment_type'] === 'free') {
             $data['price'] = null;
@@ -101,10 +114,10 @@ class WebinarController extends Controller
             'title' => 'required|string|max:255',
             'speaker_name' => 'required|string|max:255',
             'speaker_description' => 'nullable|string|max:255',
-            'speaker_image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // ADDED
+            'speaker_image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'payment_type' => 'required|in:paid,free,pay_what_you_want',
-            'price' => 'nullable|numeric|min:0',
-            'original_price' => 'nullable|numeric|min:0',
+            'price' => 'nullable|integer|min:0',
+            'original_price' => 'nullable|integer|min:0',
             'description' => 'required|string',
             'webinar_link' => 'required|url',
             'start_datetime' => 'required|date',
@@ -112,8 +125,8 @@ class WebinarController extends Controller
             'cover_image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'instructions' => 'nullable|string',
             'terms_and_conditions' => 'nullable|string',
-            'sales_start_datetime' => 'nullable|date',
-            'registration_close_datetime' => 'nullable|date|before:start_datetime',
+            'sales_start_datetime' => 'required|date',
+            'registration_close_datetime' => 'required|date|before:start_datetime',
             'max_participants' => 'nullable|integer|min:1',
             'redirect_url' => 'nullable|url',
             'is_affiliatable' => 'boolean',
@@ -135,7 +148,7 @@ class WebinarController extends Controller
             unset($data['cover_image_path']);
         }
 
-        // Handle speaker image upload - ADDED
+        // Handle speaker image upload
         if ($request->hasFile('speaker_image_path')) {
             if ($webinar->speaker_image_path) {
                 Storage::disk('public')->delete($webinar->speaker_image_path);
@@ -146,6 +159,15 @@ class WebinarController extends Controller
         } else {
             unset($data['speaker_image_path']);
         }
+        
+        // --- PERBAIKAN: Tambahkan juga casting di method update ---
+        if (isset($data['price']) && $data['price'] !== '') {
+            $data['price'] = (int) $data['price'];
+        }
+        if (isset($data['original_price']) && $data['original_price'] !== '') {
+            $data['original_price'] = (int) $data['original_price'];
+        }
+        // ---------------------------------------------------------
 
         if ($data['payment_type'] === 'free') {
             $data['price'] = null;
@@ -169,14 +191,13 @@ class WebinarController extends Controller
             Storage::disk('public')->delete($webinar->cover_image_path);
         }
 
-        // Delete speaker image when deleting webinar - ADDED
         if ($webinar->speaker_image_path) {
             Storage::disk('public')->delete($webinar->speaker_image_path);
         }
 
         $webinar->delete();
 
-        return redirect()->route('webinars.index')->with('success', 'Webinar deleted successfully.');
+        return redirect()->route('seller.webinars.my')->with('success', 'Webinar deleted successfully.');
     }
 
     public function userDashboard()
@@ -206,15 +227,18 @@ class WebinarController extends Controller
             ->where('payment_type', 'free')
             ->count();
         $paidWebinars = Webinar::where('user_id', $userId)
-            ->where('payment_type', 'paid')
+            ->where('payment_type', '!=', 'free') // Gunakan != 'free' agar mencakup 'paid' dan 'pay_what_you_want'
             ->count();
-        $totalRevenue = Webinar::where('user_id', $userId)
-            ->where('payment_type', 'paid')
-            ->with('participants')
-            ->get()
-            ->sum(function ($webinar) {
-                return $webinar->participants->sum('amount');
-            });
+
+        $totalIncome = InvoiceWebinar::where('status', 'paid')
+            ->whereHas('webinar', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->sum('amount');
+        
+        $totalParticipants = Participant::whereHas('webinar', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->count();
 
         return Inertia::render('seller/dashboard', [
             'webinarCount' => $webinarCount,
@@ -222,7 +246,8 @@ class WebinarController extends Controller
             'pastWebinars' => $pastWebinars,
             'freeWebinars' => $freeWebinars,
             'paidWebinars' => $paidWebinars,
-            'totalRevenue' => $totalRevenue,
+            'totalIncome' => (int) $totalIncome, // Pastikan ini adalah integer
+            'totalParticipants' => $totalParticipants,
         ]);
     }
 

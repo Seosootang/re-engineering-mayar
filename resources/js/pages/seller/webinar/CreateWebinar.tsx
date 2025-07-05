@@ -249,18 +249,20 @@ export default function CreateWebinar() {
                                     </div>
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div>
-                                            <Label htmlFor="sales_start_datetime">Sales Start (Optional)</Label>
+                                            <Label htmlFor="sales_start_datetime">Sales Start *</Label>
                                             <Input
                                                 id="sales_start_datetime" type="datetime-local" value={data.sales_start_datetime}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('sales_start_datetime', e.target.value)}
+                                                required
                                             />
                                             {errors.sales_start_datetime && <p className="text-red-500 text-sm mt-1">{errors.sales_start_datetime}</p>}
                                         </div>
                                         <div>
-                                            <Label htmlFor="registration_close_datetime">Registration Close (Optional)</Label>
+                                            <Label htmlFor="registration_close_datetime">Registration Close *</Label>
                                             <Input
                                                 id="registration_close_datetime" type="datetime-local" value={data.registration_close_datetime}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('registration_close_datetime', e.target.value)}
+                                                required
                                             />
                                             {errors.registration_close_datetime && <p className="text-red-500 text-sm mt-1">{errors.registration_close_datetime}</p>}
                                         </div>

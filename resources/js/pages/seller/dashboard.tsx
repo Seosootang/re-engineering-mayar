@@ -158,7 +158,7 @@ export default function SellerDashboard({
 
                         {/* View My Webinars */}
                         <a
-                            href="/seller/webinars"
+                            href="/seller/my-webinars"
                             className="group flex items-center justify-center rounded-lg bg-green-600 p-4 text-white transition-colors duration-200 hover:bg-green-700"
                         >
                             <Calendar className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />

@@ -28,6 +28,7 @@ export interface SharedData {
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
+    flash: FlashMessage;
     [key: string]: unknown;
 }
 
@@ -66,6 +67,7 @@ export interface Webinar {
     terms_and_conditions?: string;
     max_participants?: number;
     created_at: string;
+    learning_materials?: string[];
 }
 
 export interface InvoiceWebinar {
@@ -121,4 +123,10 @@ export interface HistoryItem {
     amount: number;
     type: 'paid' | 'free';
     webinar_id: number;
+}
+
+export interface FlashMessage {
+    success?: string;
+    error?: string;
+    [key: string]: any;
 }

@@ -14,9 +14,7 @@ class Webinar extends Model
         'title',
         'speaker_name',
         'speaker_description',
-        // --- ADDED ---
         'speaker_image_path',
-        // --- END ADDED ---
         'payment_type',
         'price',
         'original_price',
@@ -37,8 +35,8 @@ class Webinar extends Model
 
     protected $casts = [
         'is_affiliatable' => 'boolean',
-        'price' => 'float',
-        'original_price' => 'float',
+        'price' => 'integer',
+        'original_price' => 'integer',
         'affiliate_commission_percentage' => 'float',
         'start_datetime' => 'datetime',
         'end_datetime' => 'datetime',

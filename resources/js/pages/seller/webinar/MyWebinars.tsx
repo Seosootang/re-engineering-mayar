@@ -3,7 +3,7 @@ import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 import { type Webinar } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Edit, Eye, Trash2, X, Users } from 'lucide-react';
-import { useState } from 'react';
+import { FormEventHandler, useState } from 'react';
 
 interface Props {
     webinars: Webinar[];
@@ -14,7 +14,8 @@ export default function MyWebinars({ webinars }: Props) {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedWebinar, setSelectedWebinar] = useState<Webinar | null>(null);
 
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
+        _method: 'PUT', // Wajib untuk method spoofing
         title: '',
         speaker_name: '',
         speaker_description: '',
@@ -46,7 +47,9 @@ export default function MyWebinars({ webinars }: Props) {
 
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this webinar?')) {
-            router.delete(route('webinars.destroy', id));
+            router.delete(route('webinars.destroy', id), {
+                preserveScroll: true,
+            });
         }
     };
 
@@ -58,6 +61,7 @@ export default function MyWebinars({ webinars }: Props) {
     const handleEdit = (webinar: Webinar) => {
         setSelectedWebinar(webinar);
         setData({
+            _method: 'PUT', // Wajib ada saat mengisi ulang data
             title: webinar.title,
             speaker_name: webinar.speaker_name || '',
             speaker_description: webinar.speaker_description || '',
@@ -86,19 +90,18 @@ export default function MyWebinars({ webinars }: Props) {
         router.visit(route('seller.webinars.participants.index', webinar.id));
     };
 
-    const handleUpdate = (e: React.FormEvent) => {
+    // --- PERBAIKAN 2: Ganti 'put' menjadi 'post' di sini ---
+    const handleUpdate: FormEventHandler = (e) => {
         e.preventDefault();
         if (selectedWebinar) {
-            put(route('webinars.update', selectedWebinar.id), {
-                forceFormData: true,
+            // Gunakan 'post' untuk mengirim form update yang berisi file
+            post(route('webinars.update', selectedWebinar.id), {
                 onFinish: () => {
                     if (Object.keys(errors).length === 0) {
                         setEditModalOpen(false);
                         reset();
-                        router.visit('/seller/my-webinars', {
-                            replace: true,
-                            preserveScroll: true,
-                        });
+                        // Refresh halaman untuk melihat data terbaru
+                        router.reload({ only: ['webinars'] });
                     }
                 },
             });
