@@ -24,7 +24,7 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek ini di lingkungan lokal A
     npm install
     ```
 
-5.  **buat file environment**
+5.  **buat file environment dengan isi**
     ```bash
     APP_NAME=mayar`s_lite
     APP_ENV=local
