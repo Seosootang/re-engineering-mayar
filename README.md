@@ -6,12 +6,12 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek ini di lingkungan lokal A
 
 1.  **Clone repository ini**
     ```bash
-    git clone [https://github.com/Seosootang/re-engineering-mayar.git]
+    git clone https://github.com/Seosootang/re-engineering-mayar.git
     ```
 
 2.  **Masuk ke direktori proyek**
     ```bash
-    cd [re-engineering-mayar]
+    cd re-engineering-mayar
     ```
 
 3.  **Install dependencies (Backend)**
@@ -25,6 +25,7 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek ini di lingkungan lokal A
     ```
 
 5.  **buat file environment**
+    ```bash
     APP_NAME=mayar`s_lite
     APP_ENV=local
     APP_KEY=
