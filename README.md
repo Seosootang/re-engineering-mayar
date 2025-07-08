@@ -105,16 +105,17 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek ini di lingkungan lokal A
     ```
     
 7.  **Dapatkan Kebutuhan Xendit untuk file environment**
+    ```bash
     XENDIT_API_KEY=
     XENDIT_CALLBACK_TOKEN=
     ```
     
-8.  **Buat symbolic link untuk storage**
+9.  **Buat symbolic link untuk storage**
     ```bash
     php artisan storage:link
     ```
 
-9.  **Jalankan migrasi database**
+10.  **Jalankan migrasi database**
     ```bash
     php artisan migrate
     ```
